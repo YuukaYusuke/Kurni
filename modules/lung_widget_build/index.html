@@ -1,0 +1,292 @@
+<div class="lung-root">
+<style>
+.lung-root {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%);
+  padding: 10px 8px 12px; text-align: center; border-radius: 12px;
+}
+.lung-root .title { font-weight: 700; color: #0f766e; font-size: 0.9rem; margin-bottom: 6px; }
+.lung-root .status {
+  display: inline-block; font-size: 0.78rem; font-weight: 600;
+  padding: 4px 12px; border-radius: 20px; border: 1px solid;
+  margin-bottom: 8px; transition: all 0.25s ease;
+}
+.lung-scene {
+  position: relative; display: inline-block;
+  width: 240px; height: 290px; margin: 0 auto;
+}
+.pleura { fill: none; stroke: rgba(190,24,93,0.25); stroke-width: 2.5; }
+.fissure { fill: none; stroke: rgba(190,24,93,0.2); stroke-width: 1; stroke-dasharray: 3 2; }
+.lung-svg {
+  width: 100%; height: 100%; display: block;
+  transition: filter 0.3s ease;
+}
+/* Animasi napas — scale dari diafragma */
+#lung-breathe {
+  transform-origin: 120px 228px;
+  animation: breathe 3.2s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1, 1) translateY(0); }
+  40% { transform: scale(1.03, 1.055) translateY(-3px); }
+  60% { transform: scale(1.025, 1.04) translateY(-1px); }
+}
+#lung-breathe.labored {
+  animation: breatheLabored 1.8s ease-in-out infinite;
+}
+@keyframes breatheLabored {
+  0%, 100% { transform: scale(1, 0.98); }
+  50% { transform: scale(1.02, 1.02) translateY(-1px); }
+}
+#lung-breathe.weak {
+  animation: breatheWeak 4.5s ease-in-out infinite;
+}
+@keyframes breatheWeak {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.015, 1.025); }
+}
+.rib-cage {
+  fill: none; stroke: #94a3b8; stroke-width: 1.2; opacity: 0.35;
+}
+.smoke-layer {
+  position: absolute; bottom: 22%; left: 50%; transform: translateX(-50%);
+  width: 120px; height: 80px; pointer-events: none; transition: opacity 0.3s;
+}
+.smoke {
+  position: absolute; bottom: 0; width: 22px; height: 22px;
+  background: radial-gradient(circle, rgba(100,100,100,0.7) 0%, transparent 70%);
+  border-radius: 50%; animation: rise 3s ease-out infinite;
+}
+.smoke.s1 { left: 15%; } .smoke.s2 { left: 42%; width: 30px; height: 30px; animation-delay: 1s; }
+.smoke.s3 { left: 68%; animation-delay: 2s; }
+@keyframes rise {
+  0% { transform: translateY(0) scale(0.4); opacity: 0; }
+  35% { opacity: 0.6; }
+  100% { transform: translateY(-75px) scale(1.5); opacity: 0; }
+}
+.sliders { margin-top: 10px; text-align: left; padding: 0 6px; }
+.slider-row { margin-bottom: 10px; }
+.slider-row label {
+  display: flex; justify-content: space-between;
+  font-size: 0.75rem; color: #334155 !important; font-weight: 600;
+}
+.slider-row input[type=range] { width: 100%; accent-color: #0d9488; cursor: pointer; }
+.val { color: #0f766e !important; font-weight: 700; }
+.hint { font-size: 0.68rem; color: #64748b !important; margin-top: 6px; }
+.breath-label {
+  font-size: 0.65rem; color: #0d9488 !important; margin-top: 4px;
+  animation: fadeBreath 3.2s ease-in-out infinite;
+}
+@keyframes fadeBreath {
+  0%, 100% { opacity: 0.5; } 40% { opacity: 1; }
+}
+</style>
+
+<div class="title">🫁 Paru kamu (live)</div>
+<div id="lung-status" class="status">Sehat · 0%</div>
+
+<div class="lung-scene">
+  <svg class="lung-svg" viewBox="0 0 240 280" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="tissueGrad" x1="20%" y1="10%" x2="80%" y2="95%">
+        <stop id="tg0" offset="0%" stop-color="#fecdd3"/>
+        <stop id="tg1" offset="40%" stop-color="#f472b6"/>
+        <stop id="tg2" offset="85%" stop-color="#db2777"/>
+        <stop id="tg3" offset="100%" stop-color="#9f1239"/>
+      </linearGradient>
+      <linearGradient id="bronchGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#fce7f3"/>
+        <stop offset="100%" stop-color="#9f1239"/>
+      </linearGradient>
+      <radialGradient id="shineL" cx="35%" cy="30%" r="50%">
+        <stop offset="0%" stop-color="rgba(255,255,255,0.45)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+      </radialGradient>
+      <radialGradient id="shineR" cx="65%" cy="28%" r="52%">
+        <stop offset="0%" stop-color="rgba(255,255,255,0.4)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+      </radialGradient>
+      <filter id="softShadow" x="-15%" y="-15%" width="130%" height="130%">
+        <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#881337" flood-opacity="0.12"/>
+      </filter>
+    </defs>
+
+    <!-- Rusuk -->
+    <g class="rib-cage" opacity="0.28">
+      <path d="M48 48 Q38 95 42 155 Q44 195 48 218"/>
+      <path d="M62 42 Q55 100 58 160 Q60 205 64 222"/>
+      <path d="M178 42 Q185 100 182 160 Q180 205 176 222"/>
+      <path d="M192 48 Q202 95 198 155 Q196 195 192 218"/>
+      <path d="M75 200 Q120 212 165 200"/>
+    </g>
+
+    <g id="lung-breathe" filter="url(#softShadow)">
+      <!-- Trakea + cincin kartilago -->
+      <g id="trachea">
+        <rect x="112" y="12" width="16" height="52" rx="8" fill="url(#bronchGrad)" stroke="#9f1239" stroke-width="0.6"/>
+        <ellipse cx="120" cy="22" rx="7" ry="2.5" fill="none" stroke="#be185d" stroke-width="0.5" opacity="0.6"/>
+        <ellipse cx="120" cy="32" rx="7.5" ry="2.5" fill="none" stroke="#be185d" stroke-width="0.5" opacity="0.6"/>
+        <ellipse cx="120" cy="42" rx="8" ry="2.5" fill="none" stroke="#be185d" stroke-width="0.5" opacity="0.6"/>
+        <ellipse cx="120" cy="52" rx="8" ry="2.5" fill="none" stroke="#be185d" stroke-width="0.5" opacity="0.6"/>
+      </g>
+
+      <!-- Carina & bronkus utama -->
+      <path fill="none" stroke="url(#bronchGrad)" stroke-width="6" stroke-linecap="round"
+        d="M120 62 L95 88"/>
+      <path fill="none" stroke="url(#bronchGrad)" stroke-width="6.5" stroke-linecap="round"
+        d="M120 62 L148 90"/>
+
+      <!-- Bronkus sekunder & tersier (paru kanan - kiri layar, lebih besar) -->
+      <g stroke-linecap="round" fill="none" opacity="0.9">
+        <path stroke="#e11d48" stroke-width="3" d="M95 88 Q72 98 58 112 Q48 128 45 148"/>
+        <path stroke="#db2777" stroke-width="2.2" d="M95 88 Q80 108 72 132 Q68 155 72 178"/>
+        <path stroke="#db2777" stroke-width="1.8" d="M58 112 Q42 125 38 145 Q36 168 48 188"/>
+        <path stroke="#f472b6" stroke-width="1.5" d="M72 132 Q65 148 62 165"/>
+      </g>
+      <g stroke-linecap="round" fill="none" opacity="0.9">
+        <path stroke="#e11d48" stroke-width="3" d="M148 90 Q168 100 180 114 Q188 130 190 150"/>
+        <path stroke="#db2777" stroke-width="2.2" d="M148 90 Q162 110 172 128 Q178 152 172 178"/>
+        <path stroke="#db2777" stroke-width="1.8" d="M180 114 Q192 128 196 148 Q198 172 186 192"/>
+        <path stroke="#f472b6" stroke-width="1.5" d="M172 128 Q178 145 176 162"/>
+      </g>
+
+      <!-- PARU KANAN (kiri layar) — 3 lobus, lebih besar -->
+      <path id="lung-right" fill="url(#tissueGrad)" stroke="#be185d" stroke-width="1.2"
+        d="M95 88
+           C70 94 48 112 42 136
+           C36 162 42 192 62 212
+           C78 224 92 220 98 202
+           C104 178 102 152 98 128
+           C92 108 98 94 108 88
+           L95 88 Z"/>
+      <path class="pleura" d="M95 88 C70 94 48 112 42 136 C36 162 42 192 62 212 C78 224 92 220 98 202 C104 178 102 152 98 128 C92 108 98 94 108 88 Z"/>
+      <path class="fissure" d="M52 118 Q75 125 88 145"/>
+      <path class="fissure" d="M48 155 Q72 162 85 178"/>
+      <ellipse cx="68" cy="125" rx="28" ry="38" fill="url(#shineL)" opacity="0.55"/>
+
+      <!-- PARU KIRI (kanan layar) — takik jantung -->
+      <path id="lung-left" fill="url(#tissueGrad)" stroke="#be185d" stroke-width="1.2"
+        d="M148 90
+           C172 96 192 114 196 138
+           C200 164 192 198 172 216
+           C158 226 142 222 136 204
+           C128 180 130 154 134 130
+           C140 110 148 98 158 92
+           C152 88 148 90 Z
+           M148 90
+           C138 95 128 108 132 125
+           C136 138 148 142 158 128
+           C162 112 158 98 148 90 Z"/>
+      <path class="pleura" d="M148 90 C172 96 192 114 196 138 C200 164 192 198 172 216 C158 226 142 222 136 204 C128 180 130 154 134 130 C140 110 148 98 158 92 C152 88 148 90 Z"/>
+      <path class="fissure" d="M188 122 Q168 128 152 142"/>
+      <ellipse cx="178" cy="128" rx="26" ry="36" fill="url(#shineR)" opacity="0.5"/>
+
+      <!-- Tekstur alveolar -->
+      <g id="alveoli" fill="#fda4af" opacity="0.35">
+        <circle cx="55" cy="135" r="1.3"/><circle cx="68" cy="155" r="1"/><circle cx="48" cy="172" r="1.4"/>
+        <circle cx="75" cy="185" r="1.1"/><circle cx="62" cy="148" r="0.8"/><circle cx="40" cy="158" r="1"/>
+        <circle cx="185" cy="138" r="1.2"/><circle cx="172" cy="158" r="1"/><circle cx="192" cy="175" r="1.3"/>
+        <circle cx="165" cy="188" r="1"/><circle cx="178" cy="150" r="0.9"/><circle cx="155" cy="165" r="1"/>
+      </g>
+
+      <!-- Kerusakan (overlay mengikuti bentuk paru) -->
+      <g id="lung-overlay" style="opacity:0">
+        <path fill="#3f3f46" opacity="0.9" d="M95 88 C70 94 48 112 42 136 C36 162 42 192 62 212 C78 224 92 220 98 202 C104 178 102 152 98 128 C92 108 98 94 108 88 Z"/>
+        <path fill="#27272a" opacity="0.95" d="M148 90 C172 96 192 114 196 138 C200 164 192 198 172 216 C158 226 142 222 136 204 C128 180 130 154 134 130 C140 110 148 98 158 92 C152 88 148 90 Z M148 90 C138 95 128 108 132 125 C136 138 148 142 158 128 C162 112 158 98 148 90 Z"/>
+      </g>
+      <g id="lung-cracks" style="opacity:0" stroke-linecap="round" fill="none">
+        <path stroke="#71717a" stroke-width="1.3" d="M52 128 L65 148 L58 172 M45 155 L58 178"/>
+        <path stroke="#52525b" stroke-width="1.5" d="M188 125 L175 145 L182 170 M198 158 L184 182"/>
+        <path stroke="#a1a1aa" stroke-width="1" d="M120 155 L118 172 L122 188"/>
+      </g>
+    </g>
+
+    <!-- Diafragma (kupola) -->
+    <path id="diaphragm" fill="#94a3b8" stroke="#64748b" stroke-width="1" opacity="0.55"
+      d="M32 228 Q120 248 208 228 L208 238 Q120 258 32 238 Z"/>
+    <path fill="#cbd5e1" opacity="0.4" d="M50 232 Q120 242 190 232 L190 236 Q120 246 50 236 Z"/>
+  </svg>
+  <div id="lung-smoke" class="smoke-layer" style="opacity:0">
+    <div class="smoke s1"></div><div class="smoke s2"></div><div class="smoke s3"></div>
+  </div>
+</div>
+
+<div class="breath-label" id="breath-text">● Tarik napas · buang napas...</div>
+
+<div class="sliders">
+  <div class="slider-row">
+    <label><span>Lama merokok (tahun)</span><span class="val" id="lv-lama">0</span></label>
+    <input type="range" id="sl-lama" min="0" max="50" value="0" step="1"/>
+  </div>
+  <div class="slider-row">
+    <label><span>Batang / hari</span><span class="val" id="lv-batang">0</span></label>
+    <input type="range" id="sl-batang" min="0" max="30" value="0" step="1"/>
+  </div>
+</div>
+<div class="hint">Geser slider — warna, kerusakan & napas berubah langsung</div>
+
+<script>
+(function(){
+  function calcDamage(b,l){
+    if(b<1&&l<1) return 0;
+    return Math.min(100, b*3.25 + l*1.65 + b*l*0.048);
+  }
+  function statusInfo(d){
+    if(d===0) return ["Sehat","#047857","#ecfdf5","#a7f3d0"];
+    if(d<28) return ["Ringan","#a16207","#fffbeb","#fcd34d"];
+    if(d<55) return ["Rusak sedang","#c2410c","#fff7ed","#fdba74"];
+    if(d<80) return ["Rusak berat","#b91c1c","#fef2f2","#fca5a5"];
+    return ["Kritis","#7f1d1d","#fef2f2","#fca5a5"];
+  }
+  function setBreathing(d){
+    var g = document.getElementById("lung-breathe");
+    var txt = document.getElementById("breath-text");
+    g.classList.remove("labored","weak");
+    if(d===0){
+      txt.textContent = "● Napas normal — menghirup & menghembus";
+    } else if(d<40){
+      g.classList.add("weak");
+      txt.textContent = "● Napas mulai terbatas";
+    } else {
+      g.classList.add("labored");
+      txt.textContent = "● Napas berat / terasa sesak";
+    }
+  }
+  function updateLung(b,l){
+    var d = calcDamage(b,l), t = d/100, info = statusInfo(d);
+    var stEl = document.getElementById("lung-status");
+    stEl.textContent = info[0] + " · " + d.toFixed(1) + "% kerusakan";
+    stEl.style.color = info[1];
+    stEl.style.background = info[2];
+    stEl.style.borderColor = info[3];
+
+    var r1=Math.round(253*(1-t)+60*t), g1=Math.round(164*(1-t)+45*t), b1=Math.round(175*(1-t)+50*t);
+    var r2=Math.round(251*(1-t)+30*t), g2=Math.round(113*(1-t)+25*t), b2=Math.round(133*(1-t)+30*t);
+    var r3=Math.round(225*(1-t)+20*t), g3=Math.round(29*(1-t)+15*t), b3=Math.round(72*(1-t)+20*t);
+    document.getElementById("tg0").setAttribute("stop-color","rgb("+r1+","+g1+","+b1+")");
+    document.getElementById("tg1").setAttribute("stop-color","rgb("+r2+","+g2+","+b2+")");
+    document.getElementById("tg2").setAttribute("stop-color","rgb("+r3+","+g3+","+b3+")");
+    var tg3el = document.getElementById("tg3");
+    if(tg3el) tg3el.setAttribute("stop-color","rgb("+Math.round(80*(1-t)+40*t)+","+Math.round(20*(1-t)+10*t)+","+Math.round(50*(1-t)+20*t)+")");
+
+    document.querySelector(".lung-svg").style.filter =
+      "brightness("+(1-t*0.5)+") saturate("+(1-t*0.85)+") contrast("+(1+t*0.08)+")";
+    document.getElementById("lung-overlay").style.opacity = t * 0.82;
+    document.getElementById("lung-cracks").style.opacity = Math.max(0, (t-0.15)*1.4);
+    document.getElementById("alveoli").style.opacity = 0.4 * (1 - t*0.7);
+    document.getElementById("lung-smoke").style.opacity = Math.max(0, (t-0.05)*0.95);
+
+    setBreathing(d);
+    document.getElementById("lv-lama").textContent = l;
+    document.getElementById("lv-batang").textContent = b;
+  }
+  var elB = document.getElementById("sl-batang");
+  var elL = document.getElementById("sl-lama");
+  var initB = __BATANG__, initL = __LAMA__;
+  elB.value = initB; elL.value = initL;
+  function onInput(){ updateLung(+elB.value, +elL.value); }
+  elB.oninput = onInput; elL.oninput = onInput;
+  updateLung(initB, initL);
+})();
+</script>
+</div>
