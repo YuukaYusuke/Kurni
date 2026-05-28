@@ -432,9 +432,9 @@ Proyek tugas **Sistem Cerdas** — ParuSehat v2.0
 **Version**: 2.0
 ## 👥 Anggota Kelompok
 
-| No |    Nama    |    NIM     |
-|----|------------|----------- |
+| No |    Nama    |    NIM    |
+|----|------------|------------|
 | 1  | Kurniawan  | 2313010653 |
-| 2  | Raska      | 23130106   |
+| 2  | Raska      | 2313010657 |
 | 3  | Hapki      | 2313010633 |
 
